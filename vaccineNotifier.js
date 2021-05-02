@@ -72,13 +72,13 @@ async function notifyMe(validSlots) {
       slots: validSlot.slots,
     };
   });
-  let slotDetails = JSON.stringify(sendData, null, "\t");
+
   centerString = centerString.replace(/,\s*$/, "");
 
   notifier.sendEmail(
     EMAIL,
     "VACCINE AVAILABLE at " + centerString,
-    slotDetails,
+    sendData,
     (err, result) => {
       if (err) {
         console.error({ err });

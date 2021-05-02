@@ -1,6 +1,7 @@
 const nodemailer = require("nodemailer");
 const { google } = require("googleapis");
 require("dotenv").config();
+const json2html = require("json-to-html");
 
 const OAuth2 = google.auth.OAuth2;
 
@@ -84,17 +85,31 @@ const smtpTransport = nodemailer.createTransport({
 //   ],
 // };
 exports.sendEmail = function (email, subjectLine, slotDetails, callback) {
+  var html = "";
+  slotDetails.map((slotDetail) => {
+    str = json2html(slotDetail);
+    str = str.replace(/[{}]/g, "");
+    str = str.replace(/,/g, "<br>");
+    str += "<br><br><br>";
+    html += str;
+    // console.log(typeof str);
+  });
+  console.log("Html: ", html);
+  // console.log(typeof html);
+
   let options = {
     from: String("Vaccine Checker " + process.env.EMAIL),
     to: email,
     subject: subjectLine,
-    text: "Vaccine available. Details: \n\n" + slotDetails,
+    generateTextFromHTML: true,
+    html: "<h1>Vaccine Available, Details: </h1>" + slotDetails,
   };
   const mailOptions = {
     from: String("Vaccine Checker " + process.env.EMAIL),
     to: email,
     subject: subjectLine,
-    text: "Vaccine available. Details: \n\n" + slotDetails,
+    generateTextFromHTML: true,
+    html: "<h1>Vaccine Available, Details: </h1>" + html,
   };
   smtpTransport.sendMail(mailOptions, (error, info) => {
     if (error) {
