@@ -3,16 +3,6 @@ const moment = require("moment");
 const cron = require("node-cron");
 const axios = require("axios");
 const notifier = require("./notifier");
-/**
-Step 1) Enable application access on your gmail with steps given here:
- https://support.google.com/accounts/answer/185833?p=InvalidSecondFactor&visit_id=637554658548216477-2576856839&rd=1
-
-Step 2) Enter the details in the file .env, present in the same folder
-
-Step 3) On your terminal run: npm i && pm2 start vaccineNotifier.js
-
-To close the app, run: pm2 stop vaccineNotifier.js && pm2 delete vaccineNotifier.js
- */
 
 const PINCODE = process.env.PINCODE;
 const EMAIL = process.env.EMAIL;
@@ -20,7 +10,7 @@ const AGE = process.env.AGE;
 
 async function main() {
   try {
-    cron.schedule("* * * * *", async () => {
+    cron.schedule("*/10 * * * * *", async () => {
       await checkAvailability();
     });
   } catch (e) {
@@ -67,12 +57,34 @@ function getSlotsForDate(DATE) {
 }
 
 async function notifyMe(validSlots) {
-  let slotDetails = JSON.stringify(validSlots, null, "\t");
-  notifier.sendEmail(EMAIL, "VACCINE AVAILABLE", slotDetails, (err, result) => {
-    if (err) {
-      console.error({ err });
-    }
+  let centerString = "";
+  const sendData = validSlots.map((validSlot) => {
+    centerString += validSlot.name + ", ";
+    return {
+      name: validSlot.name,
+      date: validSlot.date,
+      pincode: validSlot.pincode,
+      from: validSlot.from,
+      to: validSlot.to,
+      fee_type: validSlot.fee_type,
+      vaccine: validSlot.vaccine,
+      min_age_limit: validSlot.min_age_limit,
+      slots: validSlot.slots,
+    };
   });
+  let slotDetails = JSON.stringify(sendData, null, "\t");
+  centerString = centerString.replace(/,\s*$/, "");
+
+  notifier.sendEmail(
+    EMAIL,
+    "VACCINE AVAILABLE at " + centerString,
+    slotDetails,
+    (err, result) => {
+      if (err) {
+        console.error({ err });
+      }
+    }
+  );
 }
 
 async function fetchNext10Days() {
