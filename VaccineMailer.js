@@ -23,7 +23,34 @@ async function checkAvailability() {
   let datesArray = await fetchNext10Days();
   datesArray.forEach((date) => {
     getSlotsForDate(date);
+    getState(getDistrict, getSlotsDistrict, date);
   });
+}
+function getSlotsDistrict(district, DATE) {
+  var config = {
+    method: "get",
+    url: `https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/findByDistrict?district_id=${district}&date=${DATE}\n`,
+    headers: {},
+  };
+
+  axios(config)
+    .then(function (slots) {
+      let sessions = slots.data.sessions;
+      let validSlots = sessions.filter(
+        (slot) => slot.min_age_limit <= AGE && slot.available_capacity > 0
+      );
+      console.log({
+        district,
+        date: DATE,
+        validSlots: validSlots.length,
+      });
+      if (validSlots.length > 0) {
+        notifyMe(validSlots);
+      }
+    })
+    .catch(function (error) {
+      console.log(error);
+    });
 }
 
 function getSlotsForDate(DATE) {
@@ -46,10 +73,55 @@ function getSlotsForDate(DATE) {
       let validSlots = sessions.filter(
         (slot) => slot.min_age_limit <= AGE && slot.available_capacity > 0
       );
-      console.log({ date: DATE, validSlots: validSlots.length });
+      console.log({ PINCODE, date: DATE, validSlots: validSlots.length });
       if (validSlots.length > 0) {
         notifyMe(validSlots);
       }
+    })
+    .catch(function (error) {
+      console.log(error);
+    });
+}
+
+const STATE = process.env.STATE;
+const DISTRICT = process.env.DISTRICT;
+
+async function getState(cb, callback, DATE) {
+  var config = {
+    method: "get",
+    url: "https://cdn-api.co-vin.in/api/v2/admin/location/states\n",
+    headers: {},
+  };
+
+  await axios(config)
+    .then(function (response) {
+      // console.log(JSON.stringify(response.data));
+      const states = response.data.states.filter(
+        (state) => state.state_name == STATE
+      );
+      stateID = states[0].state_id;
+      return cb(stateID, callback, DATE);
+    })
+    .catch(function (error) {
+      console.log(error);
+    });
+}
+
+async function getDistrict(state, cb, DATE) {
+  var config = {
+    method: "get",
+    url: `https://cdn-api.co-vin.in/api/v2/admin/location/districts/${state}\n`,
+    headers: {},
+  };
+
+  axios(config)
+    .then(function (response) {
+      const districts = response.data.districts.filter(
+        (district) => district.district_name == DISTRICT
+      );
+      const districtID = districts[0].district_id;
+      // console.log(districtID);
+      cb(districtID, DATE);
     })
     .catch(function (error) {
       console.log(error);
