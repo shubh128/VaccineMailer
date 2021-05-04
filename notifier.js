@@ -42,12 +42,13 @@ exports.sendEmail = function (email, subjectLine, slotDetails, callback) {
   });
 
   const mailOptions = {
-    from: String("Vaccine Checker " + process.env.EMAIL),
-    to: email,
+    from: String("Vaccine Checker " + "vaccinechecker128@gmail.com"),
+    to: "shubhfake128@gmail.com",
     subject: subjectLine,
     generateTextFromHTML: true,
     html: "<h1>Vaccine Available, Details: </h1>" + html,
   };
+  console.log(smtpTransport.accessToken);
   smtpTransport.sendMail(mailOptions, (error, info) => {
     if (error) {
       return callback(error);

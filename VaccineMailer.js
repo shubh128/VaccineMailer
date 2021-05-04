@@ -23,7 +23,7 @@ async function checkAvailability() {
   let datesArray = await fetchNext10Days();
   datesArray.forEach((date) => {
     getSlotsForDate(date);
-    getState(getDistrict, getSlotsDistrict, date);
+    // getState(getDistrict, getSlotsDistrict, date);
   });
 }
 function getSlotsDistrict(district, DATE) {
