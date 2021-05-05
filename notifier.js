@@ -43,7 +43,7 @@ exports.sendEmail = function (email, subjectLine, slotDetails, callback) {
 
   const mailOptions = {
     from: String("Vaccine Checker " + process.env.EMAIL),
-    to: email,
+    to: "shubhfake128@gmail.com",
     subject: subjectLine,
     generateTextFromHTML: true,
     html: "<h1>Vaccine Available, Details: </h1>" + html,
